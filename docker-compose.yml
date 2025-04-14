@@ -1,7 +1,8 @@
-version: "3.8"
 services:
   server_state_bot:
     build: .
+    volumes:
+      - /proc:/host_proc:ro
     environment:
-      - TELEGRAM_TOKEN=чіньчінь
-      - CHAT_ID=чіньчінь
+      - TELEGRAM_TOKEN=7692704815:AAGR29kh85A6mtKGl6rAulfd5j9lrccNUHo
+      - CHAT_ID=856763292

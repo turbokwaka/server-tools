@@ -1,5 +1,6 @@
 import psutil
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import subprocess
 import re
 import os
@@ -33,27 +34,36 @@ def get_cpu_info():
 
 def get_uptime():
     try:
-        uptime_pretty = subprocess.check_output(['uptime', '-p'], encoding='utf-8').strip()
-        return uptime_pretty
+        with open("/host_proc/uptime", "r") as f:
+            uptime_data = f.readline().split()
+            uptime_seconds = float(uptime_data[0])
+            mins = int(uptime_seconds // 60)
+            hours = mins // 60
+            days = hours // 24
+            return f"{days}d {hours % 24}h {mins % 60}m"
     except Exception as e:
         return f"Uptime not available: {e}"
 
-
 def get_k10temp_temp():
     try:
-        output = subprocess.check_output(['sensors'], encoding='utf-8')
-        pattern = r'k10temp-pci-00c3\n(?:.+\n)*?temp1:\s+\+([\d.]+)°C'
-        match = re.search(pattern, output)
+        output = subprocess.check_output(['sensors'], encoding='utf-8', errors='ignore')
+        pattern = r'k10temp.*?\n(?:.+\n)*?temp1:\s+\+([\d.]+)°C'
+        match = re.search(pattern, output, re.MULTILINE)
         if match:
             return f"{match.group(1)} °C"
+        else:
+            return "No k10temp data"
     except Exception as e:
         return f"Temperature not available: {e}"
+
+def get_current_time_kiev():
+    return datetime.now(ZoneInfo("Europe/Kiev")).strftime('%Y-%m-%d %H:%M:%S')
 
 def prepare_output():
     output = []
 
     output.append("⛅ Time now")
-    output.append(f"   {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    output.append(f"   {get_current_time_kiev()}")
     output.append("")
 
     output.append("🌸 Memory Info")
@@ -76,9 +86,7 @@ def prepare_output():
 
     output.append(f"🪸 Temperature\n   K10temp   : {get_k10temp_temp()}")
 
-    full_output = "\n".join(output)
-
-    return full_output
+    return "\n".join(output)
 
 def send_output(output):
     params = {
@@ -88,8 +96,8 @@ def send_output(output):
     requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", data=params).raise_for_status()
 
 def main():
-    send_output(prepare_output())
+    result = prepare_output()
+    send_output(result)
 
 if __name__ == "__main__":
     main()
-

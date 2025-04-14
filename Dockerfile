@@ -1,10 +1,14 @@
 FROM python:3.9-slim
 
+# Встановлюємо lm-sensors
+RUN apt-get update && \
+    apt-get install -y lm-sensors && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+COPY main.py .
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
+# Встановлення залежностей Python
+RUN pip install psutil requests
 
 CMD ["python", "main.py"]
