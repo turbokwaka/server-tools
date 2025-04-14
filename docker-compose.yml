@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  server_state_bot:
+    build: .
+    environment:
+      - TELEGRAM_TOKEN=чіньчінь
+      - CHAT_ID=чіньчінь
