@@ -72,20 +72,12 @@ def get_current_time_kyiv():
 
 def get_ip_info():
     try:
-        # локальна IP
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-    except Exception as e:
-        local_ip = f"Error: {e}"
-
-    try:
         # зовнішня IP
         external_ip = requests.get("https://api.ipify.org", timeout=5).text
     except Exception as e:
         external_ip = f"Error: {e}"
 
     return {
-        "Local IP": local_ip,
         "External IP": external_ip
     }
 
