@@ -5,6 +5,7 @@ import subprocess
 import re
 import os
 import requests
+import socket
 
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
@@ -59,6 +60,25 @@ def get_k10temp_temp():
 def get_current_time_kiev():
     return datetime.now(ZoneInfo("Europe/Kiev")).strftime('%Y-%m-%d %H:%M:%S')
 
+def get_ip_info():
+    try:
+        # локальна IP
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+    except Exception as e:
+        local_ip = f"Error: {e}"
+
+    try:
+        # зовнішня IP
+        external_ip = requests.get("https://api.ipify.org", timeout=5).text
+    except Exception as e:
+        external_ip = f"Error: {e}"
+
+    return {
+        "Local IP": local_ip,
+        "External IP": external_ip
+    }
+
 def prepare_output():
     output = []
 
@@ -85,6 +105,11 @@ def prepare_output():
     output.append("")
 
     output.append(f"🪸 Temperature\n   K10temp   : {get_k10temp_temp()}")
+    output.append("")
+
+    output.append("🌐 Network Info")
+    for k, v in get_ip_info().items():
+        output.append(f"   {k:10}: {v}")
 
     return "\n".join(output)
 
