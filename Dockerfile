@@ -1,14 +1,19 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Встановлюємо lm-sensors
-RUN apt-get update && \
-    apt-get install -y lm-sensors && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends lm-sensors tzdata \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY main.py .
 
-# Встановлення залежностей Python
-RUN pip install psutil requests
+# Спочатку залежності (кращий кеш)
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "main.py"]
+# Потім код
+COPY *.py ./
+COPY .env ./
+
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "-u", "scheduler.py"]

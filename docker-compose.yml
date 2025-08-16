@@ -3,6 +3,5 @@ services:
     build: .
     volumes:
       - /proc:/host_proc:ro
-    environment:
-      - TELEGRAM_TOKEN=7692704815:AAGR29kh85A6mtKGl6rAulfd5j9lrccNUHo
-      - CHAT_ID=856763292
+      - /sys:/sys:ro
+    restart: always
